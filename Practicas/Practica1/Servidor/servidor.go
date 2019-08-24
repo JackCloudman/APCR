@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"time"
 
 	"github.com/mholt/archiver"
 )
@@ -28,6 +29,7 @@ type PathInfo struct {
 	Path    string   `json:"path"`
 	Nombres []string `json:"nombres"`
 	Tipo    []int    `json:"tipo"`
+	Sizes   []int64  `json:"sizes"`
 }
 
 func recibir(fileName, ext string, tam int64, conn net.Conn) {
@@ -54,6 +56,15 @@ func uncompress(filename string) {
 		panic(err)
 	}
 	println("Descompresion completa!")
+}
+func compress(filename string) int64 {
+	err := archiver.Archive([]string{PATH + filename}, PATH+filename+".zip")
+	if err != nil {
+		panic(err)
+	}
+	println("Compresion completa!")
+	fileStat, _ := os.Stat(PATH + filename + ".zip")
+	return fileStat.Size()
 }
 func cleanFiles(filename string) {
 	_ = os.Remove(PATH + filename)
@@ -97,6 +108,50 @@ func getPathInfo(path string) []byte {
 	println(string(res))
 	return res
 }
+func download(data Message, conn net.Conn) {
+	fi := &PathInfo{}
+	fileStat, err := os.Stat(PATH + data.Nombres[0])
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("File Name:", fileStat.Name())        // Base name of the file
+	fmt.Println("Size:", fileStat.Size())             // Length in bytes for regular files
+	fmt.Println("Permissions:", fileStat.Mode())      // File mode bits
+	fmt.Println("Last Modified:", fileStat.ModTime()) // Last modification time
+	fmt.Println("Is Directory: ", fileStat.IsDir())   // Abbreviation for Mode().IsDir()
+	if fileStat.IsDir() {
+		fi.Tipo = []int{1}
+		fi.Sizes = []int64{compress(data.Nombres[0])}
+		fi.Nombres = []string{fileStat.Name() + ".zip"}
+	} else {
+		fi.Tipo = []int{0}
+		fi.Sizes = []int64{fileStat.Size()}
+		fi.Nombres = []string{fileStat.Name()}
+	}
+	fi.Path = "."
+	res, _ := json.Marshal(fi)
+	fmt.Println(string(res))
+	conn.Write(res) //Enviamos el .json con la informacion del Archivo
+	time.Sleep(100 * time.Millisecond)
+	file, err := os.Open(PATH + fi.Nombres[0])
+	if err != nil {
+		log.Fatal(err)
+	}
+	sendBuffer := make([]byte, BUFFERSIZE)
+	fmt.Println("Start sending file!")
+	for {
+		_, err = file.Read(sendBuffer)
+		if err == io.EOF {
+			break
+		}
+		conn.Write(sendBuffer)
+	}
+	fmt.Println("Archivo enviado!")
+	if fi.Tipo[0] == 1 {
+		cleanFiles(fi.Nombres[0])
+	}
+
+}
 func main() {
 	my_socket, err := net.Listen("tcp", ":8080")
 	if err != nil {
@@ -119,7 +174,7 @@ func main() {
 			}
 			fmt.Println(data)
 			if data.Command == "descargar" {
-				//download(data, conn)
+				download(data, conn)
 			} else if data.Command == "subir" {
 				fmt.Println("Subir!")
 				upload(data, conn)
