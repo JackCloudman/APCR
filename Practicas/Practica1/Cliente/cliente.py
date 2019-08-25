@@ -120,17 +120,41 @@ class Ui(QtWidgets.QMainWindow):
         for file in json_data['nombres']:
             len_file = len(file)
             self.list.addItem(str(file) + '     '+str(len_file)+' bytes')
-        print(json_data['nombres'])
 
         self.list.show()
         self.list.setSelectionMode(
             QtWidgets.QAbstractItemView.ExtendedSelection
         )
         self.list.itemDoubleClicked.connect(self.items_dwnl)
-        lista = self.list.selectedItems()
-        print(lista,'j')
+
+    def downloads(self,s,name,filesize):
+        f = open(name, 'wb')
+        myfile = s.recv(1024) #Descargamos el archivo
+        totalRecv = len(myfile)
+        while True:
+            if totalRecv>=filesize:
+                f.write(myfile[:-(totalRecv-filesize)])
+                f.close()
+                break
+            f.write(myfile)
+            myfile = s.recv(1024)
+            totalRecv += len(myfile)
+        print ('Descarga completa')
+        f.close()
+
     def items_dwnl(self,item):
-        print(item.text())
+        item =item.text()
+        print(item)
+        take_name = QRegExp("^\S*")
+        take_name.indexIn(item)
+        input_val= take_name.cap();
+        self.s.sendall(json.dumps({"command":"descargar","path":".","nombres":[str(input_val)]}).encode())
+        print(json.dumps({"command":"descargar","path":".","nombres":[str(input_val)]}).encode())# Peticion de descarga
+        data = self.s.recv(1024)
+        data = json.loads(data.decode(errors='ignore')) # Leemos la respuesta
+        name = data["nombres"][0]
+        filesize = data["sizes"][0]
+        self.downloads(self.s,name,filesize)
 
     def compress(self,path,name):
         try:
@@ -138,6 +162,7 @@ class Ui(QtWidgets.QMainWindow):
             return True
         except:
             return False
+
 
     def show_message(self,title,m):
         QMessageBox.about(self, title,m)
