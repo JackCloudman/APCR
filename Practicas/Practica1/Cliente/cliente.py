@@ -2,7 +2,7 @@ from PyQt5 import QtWidgets, uic
 import sys
 from PyQt5.QtCore import QRegExp
 from PyQt5.QtGui import QRegExpValidator
-from PyQt5.QtWidgets import QMessageBox, QFileDialog
+from PyQt5.QtWidgets import QMessageBox, QFileDialog, QListWidget
 import socket
 import shutil
 from os.path import basename
@@ -26,6 +26,7 @@ class Ui(QtWidgets.QMainWindow):
         self.BTN_SFILE.clicked.connect(self.openFile)
         self.BTN_SFOLDER.clicked.connect(self.openFolder)
         self.BTN_UPLOAD.clicked.connect(self.upload)
+        self.BTN_LIST.clicked.connect(self.path_list)
         self.send = None
         self.show() # Show the GUI
     def connect(self):
@@ -110,6 +111,27 @@ class Ui(QtWidgets.QMainWindow):
             l = f.read(1024)
             bytes_enviados+=1024
         f.close()
+
+    def path_list(self):
+        self.s.sendall(json.dumps({"command":"getPathInfo","path":"."}).encode())
+        data = self.s.recv(1024)
+        json_data = json.loads(data.decode())
+        self.list = QListWidget()
+        for file in json_data['nombres']:
+            len_file = len(file)
+            self.list.addItem(str(file) + '     '+str(len_file)+' bytes')
+        print(json_data['nombres'])
+
+        self.list.show()
+        self.list.setSelectionMode(
+            QtWidgets.QAbstractItemView.ExtendedSelection
+        )
+        self.list.itemDoubleClicked.connect(self.items_dwnl)
+        lista = self.list.selectedItems()
+        print(lista,'j')
+    def items_dwnl(self,item):
+        print(item.text())
+
     def compress(self,path,name):
         try:
             shutil.make_archive("temp/"+name, "zip",path)

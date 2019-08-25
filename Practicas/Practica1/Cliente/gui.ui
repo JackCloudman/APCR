@@ -141,6 +141,22 @@
     <string>SELECT FOLDER</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="BTN_LIST">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>430</x>
+     <y>200</y>
+     <width>51</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>List</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>
