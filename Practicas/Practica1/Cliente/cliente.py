@@ -29,6 +29,7 @@ class Ui(QtWidgets.QMainWindow):
         self.BTN_LIST.clicked.connect(self.path_list)
         self.send = None
         self.show() # Show the GUI
+        self.PATH = "temp/"
     def connect(self):
         h = self.HOST.text()
         p = self.PORT.text()
@@ -117,9 +118,8 @@ class Ui(QtWidgets.QMainWindow):
         data = self.s.recv(1024)
         json_data = json.loads(data.decode())
         self.list = QListWidget()
-        for file in json_data['nombres']:
-            len_file = len(file)
-            self.list.addItem(str(file) + '     '+str(len_file)+' bytes')
+        for index,file in enumerate(json_data['nombres']):
+            self.list.addItem("%s\t %s bytes\tTipo: %s"%(file,json_data["sizes"][index],"Folder" if json_data["tipo"][index] else "Archivo"))
 
         self.list.show()
         self.list.setSelectionMode(
@@ -128,7 +128,7 @@ class Ui(QtWidgets.QMainWindow):
         self.list.itemDoubleClicked.connect(self.items_dwnl)
 
     def downloads(self,s,name,filesize):
-        f = open(name, 'wb')
+        f = open(self.PATH+name, 'wb')
         myfile = s.recv(1024) #Descargamos el archivo
         totalRecv = len(myfile)
         while True:
@@ -139,7 +139,7 @@ class Ui(QtWidgets.QMainWindow):
             f.write(myfile)
             myfile = s.recv(1024)
             totalRecv += len(myfile)
-        print ('Descarga completa')
+        print('Descarga completa')
         f.close()
 
     def items_dwnl(self,item):

@@ -102,7 +102,8 @@ func getPathInfo(path string) []byte {
 			t = 0
 		}
 		pi.Tipo = append(pi.Tipo, t)
-		fmt.Println(f.Name(), f.IsDir())
+		pi.Sizes = append(pi.Sizes, f.Size())
+		fmt.Println(f.Name(), f.IsDir(), f.Size())
 	}
 	res, _ := json.Marshal(pi)
 	println(string(res))
