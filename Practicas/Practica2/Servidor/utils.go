@@ -34,7 +34,6 @@ func ImageTobase64(path string) []byte {
 	}
 	reader := bufio.NewReader(f)
 	content, _ := ioutil.ReadAll(reader)
-	fmt.Println(content)
 	return content
 }
 func sendTicket(t Ticket, conn net.Conn) {

@@ -1,5 +1,7 @@
 package main
 
+import "time"
+
 // Estructura básica de un producto
 type Articulo struct {
 	ID          int     `json:"id"`
@@ -53,6 +55,8 @@ func generarTicket(articulos []*Articulo) Ticket {
 		t.ArticulosPreciostotal = append(t.ArticulosPreciostotal, atotal)
 		t.Articulos = append(t.Articulos, &articulo)
 	}
+	fecha := time.Now()
+	t.Fecha = fecha.Format("2006-02-01 15:04:05")
 	ListaTickets = append(ListaTickets, t)
 	return t
 }
