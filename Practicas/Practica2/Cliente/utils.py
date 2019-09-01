@@ -12,8 +12,10 @@ class QCustomQWidget(QWidget):
         self.textQVBoxLayout = QVBoxLayout()
         self.textUpQLabel    = QLabel()
         self.textDownQLabel  = QLabel()
+        self.textItemsnum =QLabel()
         self.textQVBoxLayout.addWidget(self.textUpQLabel)
         self.textQVBoxLayout.addWidget(self.textDownQLabel)
+        self.textQVBoxLayout.addWidget(self.textItemsnum)
         self.allQHBoxLayout  = QHBoxLayout()
         self.iconQLabel      = QLabel()
         self.allQHBoxLayout.addWidget(self.iconQLabel, 0)
@@ -21,9 +23,15 @@ class QCustomQWidget(QWidget):
         self.setLayout(self.allQHBoxLayout)
         # setStyleSheet
         self.textUpQLabel.setStyleSheet('''
+        font: bold 20px;
         color: rgb(0, 0, 255);
         ''')
         self.textDownQLabel.setStyleSheet('''
+        font: bold 20px;
+        color: rgb(255, 0, 0);
+        ''')
+        self.textItemsnum.setStyleSheet('''
+        font: bold 20px;
         color: rgb(255, 0, 0);
         ''')
 
@@ -35,6 +43,12 @@ class QCustomQWidget(QWidget):
 
     def setIcon (self, imagePath):
             self.iconQLabel.setPixmap(QPixmap(imagePath))
+
+    def setItemNum(self,text):
+        self.textItemsnum.setText(text)
+
+    def getTextName(self):
+         return self.textUpQLabel.text()
 
 
 #Con esta funcion se obtiene todo el json

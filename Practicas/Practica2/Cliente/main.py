@@ -57,11 +57,13 @@ class Ui(QtWidgets.QMainWindow):
 
         datas =self.getCatalogo(self.s)
         self.myQListWidget = QListWidget(self)
+        #self.myQListWidget.itemDoubleClicked.connect(self.show_message('compraste algo', 'exito!'))
         for articulos in datas['articulos']:
             # Create QCustomQWidget
             myQCustomQWidget = QCustomQWidget()
             myQCustomQWidget.setTextUp(articulos['nombre'])
             myQCustomQWidget.setTextDown(str(articulos['precio']))
+            myQCustomQWidget.setItemNum(str(articulos['existencias']))
             myQCustomQWidget.setIcon('icon.png')
             # Create QListWidgetItem
             myQListWidgetItem = QListWidgetItem(self.myQListWidget)
@@ -72,9 +74,16 @@ class Ui(QtWidgets.QMainWindow):
             self.myQListWidget.setItemWidget(myQListWidgetItem, myQCustomQWidget)
             self.setCentralWidget(self.myQListWidget)
 
+        self.myQListWidget.show()
+        self.myQListWidget.itemDoubleClicked.connect(self.items_buyied)
 
-    def show_message(self,title,m):
-        QMessageBox.about(self, title,m)
+    def items_buyied(self, item):
+        item_list=item.listWidget()
+        my_customWidget=item_list.itemWidget(item)
+        print(my_customWidget.getTextName())
+
+    def show_message(self,title='jeje',m='exito'):
+        QMessageBox.about(self,title,m)
 
 
     def recvall(self, sock):
