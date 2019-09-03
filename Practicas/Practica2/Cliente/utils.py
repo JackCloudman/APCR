@@ -7,6 +7,7 @@ class QCustomQWidget(QWidget):
 
     def __init__ (self, parent = None):
         super(QCustomQWidget, self).__init__(parent)
+        self.id=0
 
         self.setWindowTitle("My Awesome App")
         self.textQVBoxLayout = QVBoxLayout()
@@ -47,9 +48,17 @@ class QCustomQWidget(QWidget):
     def setItemNum(self,text):
         self.textItemsnum.setText(text)
 
+    def setId(self,id):
+        self.id=id
+
     def getTextName(self):
          return self.textUpQLabel.text()
-
+    def getPrice(self):
+        return self.textDownQLabel.text()
+    def getExistence(self):
+        return self.textItemsnum.text()
+    def getId(self):
+        return self.id
 
 #Con esta funcion se obtiene todo el json
 def recvall(sock):
