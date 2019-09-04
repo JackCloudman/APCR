@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtGui import QRegExpValidator, QPixmap
-from PyQt5.QtWidgets import QMessageBox, QFileDialog, QListWidget, QWidget, QVBoxLayout, QHBoxLayout,QLabel, QListWidgetItem
+from PyQt5.QtWidgets import QMessageBox, QFileDialog, QListWidget, QWidget, QVBoxLayout, QHBoxLayout,QLabel, QListWidgetItem,QSpinBox
 
 
 class QCustomQWidget(QWidget):
@@ -14,11 +14,14 @@ class QCustomQWidget(QWidget):
         self.textUpQLabel    = QLabel()
         self.textDownQLabel  = QLabel()
         self.textItemsnum =QLabel()
+        self.ItemNumSpin = QSpinBox()
         self.textQVBoxLayout.addWidget(self.textUpQLabel)
         self.textQVBoxLayout.addWidget(self.textDownQLabel)
         self.textQVBoxLayout.addWidget(self.textItemsnum)
+        self.textQVBoxLayout.addWidget(self.ItemNumSpin)
         self.allQHBoxLayout  = QHBoxLayout()
         self.iconQLabel      = QLabel()
+
         self.allQHBoxLayout.addWidget(self.iconQLabel, 0)
         self.allQHBoxLayout.addLayout(self.textQVBoxLayout, 1)
         self.setLayout(self.allQHBoxLayout)
@@ -38,7 +41,8 @@ class QCustomQWidget(QWidget):
 
     def setTextUp(self, text):
             self.textUpQLabel.setText(text)
-
+    def resetSpinbox(self):
+        self.ItemNumSpin.setValue(0)
     def setTextDown (self, text):
             self.textDownQLabel.setText(text)
 
@@ -57,6 +61,8 @@ class QCustomQWidget(QWidget):
         return self.textDownQLabel.text()
     def getExistence(self):
         return self.textItemsnum.text()
+    def getNum(self):
+        return self.ItemNumSpin.value()
     def getId(self):
         return self.id
 
