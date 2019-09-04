@@ -1,10 +1,10 @@
 import socket
 import json
-host = "localhost"
+host = "192.168.0.12"
 port = 8080
 
 def recvall(sock):
-    BUFF_SIZE = 4096 # 4 KiB
+    BUFF_SIZE = 1024 # 4 KiB
     data = b''
     while True:
         part = sock.recv(BUFF_SIZE)
