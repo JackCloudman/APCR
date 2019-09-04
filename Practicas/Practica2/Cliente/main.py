@@ -17,6 +17,7 @@ class Ui(QtWidgets.QMainWindow):
         super(Ui, self).__init__() # Call the inherited classes __init__ method
         uic.loadUi('gui.ui', self) # Load the .ui file
         self.productos = []
+        self.tickets = []
         # Validator
         reg_host = QRegExp("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$")
         input_validator = QRegExpValidator(reg_host, self.HOST)
@@ -25,7 +26,6 @@ class Ui(QtWidgets.QMainWindow):
         reg_port = QRegExp("^([0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$")
         input_validator = QRegExpValidator(reg_port, self.PORT)
         self.PORT.setValidator(input_validator)
-
         self.BTN_CONN.clicked.connect(self.connect)
         self.BTN_COMPRAR.clicked.connect(self.comprar)
         self.BTN_TICKETS.clicked.connect(self.mostrartickets)
@@ -44,11 +44,27 @@ class Ui(QtWidgets.QMainWindow):
         if not articulos:
             print("Compra al menos 1")
             return
-        self.reques_buy(articulos)
-
-        print(articulos)
+        ticket = self.reques_buy(articulos)
+        self.tickets.append(ticket)
+        self.reloadArticulos()
+    def reloadArticulos(self):
+        articulos = self.getCatalogo(self.s)["articulos"]
+        for a in self.productos:
+            a.setItemNum("Disponibilidad:%d"%articulos[a.getId()]["existencias"])
+            a.resetSpinbox()
     def mostrartickets(self):
-        pass
+        self.list = QListWidget()
+        if self.tickets:
+            for t in self.tickets:
+                texto = "Numero de ticket:%d\nFecha:%s\n"%(t["ticketid"],t["fechacompra"])
+                texto+= "Articulo\t\tCANT\tPRECIO\tDESC(%)\tIMPORTE\n"
+                for index,a in enumerate(t["articulos"]):
+                    texto+="%s\t\t%d\t%.2f\t%d\t%.2f\n"%(a["nombre"][:10],a["existencias"],a["precio"],a["promocion"],t["preciostotal"][index])
+                texto+="Total: %.2f\nUsted ahorro:%.2f"%(t["total"],t["descuentototal"])
+                self.list.addItem(texto)
+        else:
+            self.list.addItem("No hay tickets!")
+        self.list.show()
     def connect(self):
         h = self.HOST.text()
         p = self.PORT.text()
@@ -115,7 +131,10 @@ class Ui(QtWidgets.QMainWindow):
         command = {"command":"comprar","articulos":articulos}
         command = json.dumps(command)
         self.s.sendall(command.encode())
-        ticket = self.recvall(self.s)
+        response = self.recvall(self.s)
+        if response["status"] != 200:
+            print("Error!")
+        return response["ticket"]
 
 
     def show_message(self,title='jeje',m='exito'):
@@ -128,11 +147,9 @@ class Ui(QtWidgets.QMainWindow):
         while True:
             part = sock.recv(BUFF_SIZE)
             data += part
-            print(len(part))
             if len(part) < BUFF_SIZE:
                 # either 0 or end of data
                 break
-        print(data)
         return json.loads(data.decode())
 
     def getCatalogo(self, socket):

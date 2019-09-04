@@ -41,7 +41,8 @@ class QCustomQWidget(QWidget):
 
     def setTextUp(self, text):
             self.textUpQLabel.setText(text)
-
+    def resetSpinbox(self):
+        self.ItemNumSpin.setValue(0)
     def setTextDown (self, text):
             self.textDownQLabel.setText(text)
 
