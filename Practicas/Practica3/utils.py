@@ -25,19 +25,21 @@ class Connection():
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
         while True:
             data = self.recvall(sock)
-            print(data)
             if data["user"] == self.NAME:
                 pass
             else:
                 self.processAction(data)
     def processAction(self,message):
         if message["action"] == "message":
-            eel.recvMessage("<b>%s</b>: %s"%(message["user"],message["text"]))
+            if message["type_message"] == "text":
+                eel.recvMessage("<b>%s</b>: %s"%(message["user"],message["text"]))
+            else:
+                eel.recvPhoto("<b>%s</b>: "%(message["user"]),message["text"])
         elif message["action"] == "join":
             eel.recvMessage("<b>Servidor</b>: El usuario %s se ha unido!"%(message["user"]))
 
     def recvall(self,sock):
-        BUFF_SIZE = 1024 # 4 KiB
+        BUFF_SIZE = 1024
         data = b''
         while True:
             part = sock.recv(BUFF_SIZE)
@@ -60,5 +62,19 @@ class Connection():
             print(e)
             return False
     def sendMessage(self,message,action="message"):
-        message = json.dumps({"user":self.NAME,"text":message,"action":action}).encode()
-        self.sock.sendto(message, (self.MCAST_GRP, self.MCAST_PORT))
+        message = json.dumps({"user":self.NAME,"text":message,"action":action,"type_message":"text"}).encode()
+        self.send(message)
+    def sendPhoto(self,message):
+        message = json.dumps({"user":self.NAME,"text":message,"action":"message","type_message":"photo"}).encode()
+        self.send(message)
+    def send(self,message):
+        l = len(message)
+        i = 0
+        max_length = 1024
+        while True:
+            if i+max_length>=l:
+                self.sock.sendto(message[i:l+1], (self.MCAST_GRP, self.MCAST_PORT))
+                break
+            else:
+                self.sock.sendto(message[i:i+max_length], (self.MCAST_GRP, self.MCAST_PORT))
+                i+=max_length

@@ -17,5 +17,9 @@ if __name__ == '__main__':
     def sendCommand(message,action):
         s.sendMessage(message,action) # Enviamos el mensaje
         return "ok" # Regresamos a Javascript el resultado de la consulta!
+    @eel.expose
+    def sendPhoto(message,data):
+        s.sendPhoto(message)
+        return "ok"
 
     eel.start('index.html', options={"port":port})    # Start
