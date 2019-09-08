@@ -6,7 +6,8 @@
           return function () {
               var $message;
               $message = $($('.message_template').clone().html());
-              $message.addClass(_this.message_side).find('.text').html(_this.text);
+              var data = emojione.toImage(_this.text)
+              $message.addClass(_this.message_side).find('.text').html(data);
               $('.messages').append($message);
               return setTimeout(function () {
                   return $message.addClass('appeared');
@@ -22,6 +23,7 @@
       getMessageText = function () {
           var $message_input;
           $message_input = $('.message_input');
+          $(".emojionearea-editor").empty();
           return $message_input.val();
       };
       sendMessage = function (text,side) {
