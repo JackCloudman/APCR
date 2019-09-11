@@ -1,6 +1,6 @@
 import socket
 import json
-host = "192.168.0.12"
+host = "localhost"
 port = 8080
 
 def recvall(sock):
