@@ -7,7 +7,7 @@ if __name__ == '__main__':
     name = input("Nickname: ")
     port = int(input("PORT: "))
     eel.init('gui')
-    s = Connection("224.1.1.1",5007,name)
+    s = Connection("localhost",8080,"224.1.1.1",5007,name)
     print("Iniciando conexion!")
     if not s.start():
         print("Error al establecer conexion!")
