@@ -4,7 +4,9 @@ import threading
 import struct
 import eel
 class Connection():
-    def __init__(self,MCAST_GRP,MCAST_PORT,NAME):
+    def __init__(self,SERVER_HOST,SERVER_PORT,MCAST_GRP,MCAST_PORT,NAME):
+        self.Serverhost = SERVER_HOST
+        self.Serverport = SERVER_PORT
         self.MCAST_GRP = MCAST_GRP
         self.MCAST_PORT = MCAST_PORT
         self.IS_ALL_GROUPS = True
@@ -14,7 +16,7 @@ class Connection():
     def listener(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        if self.IS_ALL_GROUPS:
+        if not self.IS_ALL_GROUPS:
             # on this port, receives ALL multicast groups
             sock.bind(('', self.MCAST_PORT))
         else:
@@ -36,6 +38,7 @@ class Connection():
             else:
                 eel.recvPhoto("<b>%s</b>: "%(message["user"]),message["text"])
         elif message["action"] == "join":
+            eel.appendUser(message["user"])
             eel.recvMessage("<b>Servidor</b>: El usuario %s se ha unido!"%(message["user"]))
 
     def recvall(self,sock):
@@ -50,9 +53,12 @@ class Connection():
         return json.loads(data.decode())
     def start(self):
         try:
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-            self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, self.MULTICAST_TTL)
+            self.sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+            self.sock.connect((self.Serverhost,self.Serverport))
             self.sendMessage("","join")
+            users = self.recvall(self.sock)["users"]
+            for u in users:
+                eel.appendUser(u)
             print("iniciando listener...")
             t = threading.Thread(target=self.listener)
             t.start()
