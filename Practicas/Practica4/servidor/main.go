@@ -3,34 +3,15 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"regexp"
-	"time"
 )
 
 var usuarios []string
 var rmethod = regexp.MustCompile(`(GET)|(POST)`)
-var rpath = regexp.MustCompile(`[/?][\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-]`)
+var rpath = regexp.MustCompile(`[/?][\w.,@?^=%&:/~+#-]*`)
 
-func GET(conn net.Conn, request string) {
-	data, _ := ioutil.ReadFile("index.html")
-	header := makeheader(len(data))
-	conn.Write([]byte(header))
-	conn.Write(data)
-}
-func POST(conn net.Conn, request string) {
-	mensaje := "METODO POST!"
-	header := makeheader(len(mensaje))
-	conn.Write([]byte(header))
-	conn.Write([]byte(mensaje))
-}
-func makeheader(strlen int) string {
-	dt := time.Now()
-	header := "HTTP/1.0 200 ok\n" + "Server: Axel Server/1.0 \n" + "Date: " + dt.String() + " \n" + "Content-Type: text/html \n"
-	header += "Content-Length: " + string(strlen) + "\n\n"
-	return header
-}
+/*Revisa si la peticion es metodo POST o metodo GET*/
 func handleConnection(conn net.Conn) {
 	// Mensaje
 	line, err := bufio.NewReader(conn).ReadString('\n')
@@ -51,8 +32,7 @@ func handleConnection(conn net.Conn) {
 	conn.Close()
 }
 
-/*Inicia el socket y se queda a la escucha, lee json y usa la funcion
-processCommand para ejecutar el comando que quiere el cliente.*/
+/*Inicia el socket y lo ejecute en una gorutina*/
 func main() {
 	server, err := net.Listen("tcp", ":8000")
 	if err != nil {
