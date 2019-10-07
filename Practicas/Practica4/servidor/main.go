@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"net"
 	"regexp"
@@ -14,16 +13,19 @@ var rpath = regexp.MustCompile(`[/?][\w.,@?^=%&:/~+#-]*`)
 /*Revisa si la peticion es metodo POST o metodo GET*/
 func handleConnection(conn net.Conn) {
 	// Mensaje
-	line, err := bufio.NewReader(conn).ReadString('\n')
-	fmt.Println(line)
+	recvBuf := make([]byte, 1024*9)
+	leido, err := conn.Read(recvBuf)
+	line := string(recvBuf[:leido])
 
 	if err != nil {
 		return
 	}
 	method := rmethod.FindString(string(line)) // Buscamos el metodo
 	if method == "POST" {
+		fmt.Println("POST")
 		POST(conn, string(line))
 	} else if method == "GET" {
+		fmt.Println("GET")
 		GET(conn, string(line))
 	}
 	if err != nil {
