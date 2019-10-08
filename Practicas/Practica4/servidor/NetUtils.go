@@ -50,6 +50,9 @@ func GET(conn net.Conn, request string) {
 func POST(conn net.Conn, request string) {
 	var header string
 	aux := paramregex.FindAllString(request, -1)
+	if len(aux) == 0 {
+		aux = append(aux, "")
+	}
 	args := ParseParams(aux[len(aux)-1])
 	mensaje, err := json.Marshal(args)
 	if err != nil {
@@ -61,6 +64,77 @@ func POST(conn net.Conn, request string) {
 	Write(conn, []byte(header))
 	Write(conn, mensaje)
 }
+func PUT(conn net.Conn, request string) {
+	aux := paramregex.FindAllString(request, -1)
+	if len(aux) == 0 {
+		Response400(conn)
+		return
+	}
+	args := ParseParams(aux[len(aux)-1])
+	// Campos necesarios para hacer el put
+	if _, ok := args["type"]; !ok {
+		Response400(conn)
+		return
+	}
+	if _, ok := args["name"]; !ok {
+		Response400(conn)
+		return
+	}
+	if _, ok := args["value"]; !ok {
+		Response400(conn)
+		return
+	}
+	f := HOMEFOLDER + rpath.FindString(request)
+	f, _ = url.QueryUnescape(f)
+	_, err := os.Stat(f) // Vemos si existe el archivo/directorio
+
+	if err != nil {
+		fmt.Println(err)
+		Response404(conn)
+		return
+	}
+	switch args["type"] {
+	case "folder":
+		fmt.Println("Creando folder!")
+		name, _ := url.QueryUnescape(fmt.Sprintf("%s%v", f, args["name"]))
+		os.MkdirAll(name, os.ModePerm)
+	case "file":
+		fmt.Println("Creando archivo")
+		name, _ := url.QueryUnescape(fmt.Sprintf("%s%v", f, args["name"]))
+		data, _ := url.QueryUnescape(fmt.Sprintf("%v", args["value"]))
+		err := ioutil.WriteFile(name, []byte(data), 0755)
+		if err != nil {
+			fmt.Printf("Unable to write file: %v", err)
+		}
+	}
+	Response200([]byte("ok"), conn, "text/plain")
+}
+func DELETE(conn net.Conn, request string) {
+	aux := paramregex.FindAllString(request, -1)
+	if len(aux) == 0 {
+		Response400(conn)
+		return
+	}
+	args := ParseParams(aux[len(aux)-1])
+	// Campos necesarios para hacer el put
+	if _, ok := args["name"]; !ok {
+		Response400(conn)
+		return
+	}
+	f := HOMEFOLDER + rpath.FindString(request)
+	f, _ = url.QueryUnescape(f)
+	_, err := os.Stat(f) // Vemos si existe el archivo/directorio
+
+	if err != nil {
+		fmt.Println(err)
+		Response200([]byte("ok"), conn, "text/plain")
+		return
+	}
+	name, _ := url.QueryUnescape(fmt.Sprintf("%s%v", f, args["name"]))
+	fmt.Println("Borrando: ", name)
+	os.RemoveAll(name)
+	Response200([]byte("ok"), conn, "text/plain")
+}
 func makeheader(strlen int, code, ctype string) string {
 	dt := time.Now()
 	l := strconv.Itoa(strlen)
@@ -68,6 +142,11 @@ func makeheader(strlen int, code, ctype string) string {
 	header += "Content-Length: " + l + "\n\n"
 	fmt.Println()
 	return header
+}
+func Response400(conn net.Conn) {
+	header := makeheader(15, "400 Bad Request", "text/plain")
+	Write(conn, []byte(header))
+	Write(conn, []byte("400 Bad Request"))
 }
 func Response404(conn net.Conn) {
 	data, _ := ioutil.ReadFile("404.html")
@@ -79,6 +158,11 @@ func Response200(data []byte, conn net.Conn, ctype string) {
 	header := makeheader(len(data), "200 ok", ctype)
 	Write(conn, []byte(header))
 	Write(conn, data)
+}
+func Response405(conn net.Conn) {
+	header := makeheader(18, "405", "text/plain")
+	Write(conn, []byte(header))
+	Write(conn, []byte("Method Not Allowed"))
 }
 func SendFile(filepath string, conn net.Conn) {
 	data, _ := ioutil.ReadFile(filepath)
@@ -110,6 +194,9 @@ func Write(conn net.Conn, message []byte) {
 }
 func ParseParams(data string) map[string]interface{} {
 	dict := map[string]interface{}{}
+	if data == "" {
+		return dict
+	}
 	for _, value := range strings.Split(data, "&") {
 		mymap := strings.Split(value, "=")
 		dict[mymap[0]] = mymap[1]

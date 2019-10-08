@@ -7,7 +7,7 @@ import (
 )
 
 var usuarios []string
-var rmethod = regexp.MustCompile(`(GET)|(POST)`)
+var rmethod = regexp.MustCompile(`(GET)|(POST)|(PUT)|(DELETE)`)
 var rpath = regexp.MustCompile(`[/?][\w.,@?^=%&:/~+#-]*`)
 
 /*Revisa si la peticion es metodo POST o metodo GET*/
@@ -27,6 +27,13 @@ func handleConnection(conn net.Conn) {
 	} else if method == "GET" {
 		fmt.Println("GET")
 		GET(conn, string(line))
+	} else if method == "PUT" {
+		fmt.Println("PUT")
+		PUT(conn, string(line))
+	} else if method == "DELETE" {
+		DELETE(conn, string(line))
+	} else {
+		Response405(conn)
 	}
 	if err != nil {
 		return
