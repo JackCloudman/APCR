@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Index of {{.Title}}</title>
+    <script src="https://kit.fontawesome.com/42b06bc8cc.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <h1>Index of /{{.Title}}</h1>
+    <table>
+        <tr>
+            <th valign="top">&nbsp;</th>
+            <th><a href="?C=N;O=D">Name</a></th>
+            <th><a href="?C=M;O=A">Last modified</a></th>
+            <th><a href="?C=S;O=A">Size</a></th>
+            <th><a href="?C=D;O=A">Description</a></th>
+        </tr>
+        <tr>
+            <th colspan="5">
+                <hr>
+            </th>
+        </tr>
+        <tr>
+            <td valign="top">&nbsp;</td>
+            <td><a href="/{{.Parent}}"></i><i class="fas fa-door-open"></i> Parent Directory</a> </td>
+            <td>&nbsp;</td>
+            <td align="right"> - </td>
+            <td>&nbsp;</td>
+        </tr>
+        {{with .Items}} {{ range .}}
+        <tr>
+            <td valign="top">&nbsp;</td>
+            <td><a href="/{{.Name}}">{{if .Type}}<i class="fas fa-folder"></i> {{end}}{{.Mote}}</a> </td>
+            <td align="right">{{.Date}} </td>
+            <td align="right">{{if .Type}} - {{else}}{{.Size}}{{end}}</td>
+            <td>&nbsp;</td>
+        </tr>
+        {{end}} {{end}}
+        <tr>
+            <th colspan="5">
+                <hr>
+            </th>
+        </tr>
+    </table>
+</body>
+
+</html>
